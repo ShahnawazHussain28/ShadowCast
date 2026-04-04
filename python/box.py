@@ -10,6 +10,7 @@ class WallType(Enum):
     SOUTH = 3
     WEST = 4
 
+test = 0
 class Wall:
     def __init__(self, name, p1, p2, p3):
         """
@@ -50,15 +51,10 @@ class Wall:
     
     def is_inside(self, point, tol=1e-6):
         """Checks if a point [x, y, z] is on this finite rectangle."""
-        p = np.array(point)        
-        if abs(np.dot(self.unit_normal, p) - self.d) > tol:
-            return False
-            
-        rel_p = p - self.origin
-        basis = np.array([self.u_axis, self.v_axis]).T
-        coords, _, _, _ = np.linalg.lstsq(basis, rel_p, rcond=None)
-        u, v = coords
-        
+        rel_p = point - self.origin
+        area_sq = np.sum(np.cross(self.u_axis, self.v_axis)**2)
+        u = np.dot(np.cross(rel_p, self.v_axis), np.cross(self.u_axis, self.v_axis)) / area_sq
+        v = np.dot(np.cross(self.u_axis, rel_p), np.cross(self.u_axis, self.v_axis)) / area_sq
         return (0 - tol <= u <= 1 + tol) and (0 - tol <= v <= 1 + tol)
 
     def intersects(self, line: 'Line', tol=1e-6):
@@ -66,11 +62,12 @@ class Wall:
         if abs(denom) < tol:
             return None
         t = np.dot(self.unit_normal, self.origin - line.p1) / denom
-        if not (0 <= t <= 1):
+        if not (-tol <= t <= 1 + tol):
             return None
         hit_point = line.p1 + t * line.vector
         if self.is_inside(hit_point, tol):
             return hit_point
+        return None
 
 
 class Ray:
@@ -89,16 +86,16 @@ class Line:
         self.p2 = np.array(p2)
         self.vector = p2 - p1
         self.length = np.linalg.norm(self.vector)
-        self.unit_vector = self.vector / self.length
+        self.unit_vector = self.vector / self.length if self.length > 0 else np.zeros_like(self.vector)
     
     def get_point(self, t):
         """
         Returns a 3D coordinate for local parameter t.
         t should be between 0 and 1.
         """
-        return self.p1 + t * self.unit_vector
+        return self.p1 + t * self.vector
 
-
+hitnone = 0
 class Box:
     def __init__(self, x, y, size, height):
         # center of the box
@@ -106,7 +103,7 @@ class Box:
         self.y = y
         self.size = size
         self.center = np.array([x+size/2, y+size/2, 0])
-        self.light = self.center + np.array([0, 0, height+30])
+        self.light = self.center + np.array([0, 0, height*1.05])
         self.height = height
         self.base = Wall(
             WallType.BASE,
@@ -114,8 +111,8 @@ class Box:
             [x+size, y, 0],
             [x, y+size, 0],
         )
-        self.north = Wall(
-            WallType.NORTH,
+        self.south = Wall(
+            WallType.SOUTH,
             [x, y+size, 0],
             [x+size, y+size, 0],
             [x, y+size, height],
@@ -126,8 +123,8 @@ class Box:
             [x+size, y, 0],
             [x+size, y+size, height],
         )
-        self.south = Wall(
-            WallType.SOUTH,
+        self.north = Wall(
+            WallType.NORTH,
             [x+size, y, 0],
             [x, y, 0],
             [x+size, y, height],
@@ -149,7 +146,7 @@ class Box:
     def get_intersection(self, point: np.ndarray):
         # shoot light rays from the destination to the light source
         line = Line(point, self.light)
-        walls = [self.base, self.north, self.east, self.south, self.west]
+        walls = [self.north]
         closest_intersection = float('inf')
         closest_wall = None
         closest_point = None
@@ -161,5 +158,4 @@ class Box:
                     closest_intersection = dist
                     closest_wall = wall
                     closest_point = hit
-                
         return closest_wall, closest_point
