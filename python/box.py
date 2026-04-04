@@ -2,6 +2,7 @@ import numpy as np
 from enum import Enum
 from matplotlib.axes import Axes
 from matplotlib import patches
+import cv2
 
 class WallType(Enum):
     BASE = 0
@@ -143,10 +144,19 @@ class Box:
         ax.add_patch(patches.Polygon(self.south.get_points()[:, :2], closed=True, edgecolor='black', linewidth=1))
         ax.add_patch(patches.Polygon(self.west.get_points()[:, :2], closed=True, edgecolor='black', linewidth=1))
     
+    def draw_cv(self, image: np.ndarray, color=(0, 0, 0)):
+        points = self.base.get_points()
+        points = np.int16(points)
+        image = cv2.line(image, tuple(points[0][:2]), tuple(points[1][:2]), color, 2)
+        image = cv2.line(image, tuple(points[1][:2]), tuple(points[2][:2]), color, 2)
+        image = cv2.line(image, tuple(points[2][:2]), tuple(points[3][:2]), color, 2)
+        image = cv2.line(image, tuple(points[3][:2]), tuple(points[0][:2]), color, 2)
+        return image
+    
     def get_intersection(self, point: np.ndarray):
         # shoot light rays from the destination to the light source
         line = Line(point, self.light)
-        walls = [self.north]
+        walls = [self.north, self.east, self.south, self.west]
         closest_intersection = float('inf')
         closest_wall = None
         closest_point = None

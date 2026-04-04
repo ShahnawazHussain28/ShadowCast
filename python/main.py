@@ -1,51 +1,37 @@
-from box import Box, WallType
+import cv2
 import numpy as np
-from matplotlib import pyplot as plt
-from matplotlib import patches
+from box import Box, WallType
 
 SIZE = 50
 
-def main():
-    fig, ax = plt.subplots()
-    image = plt.imread("image.png", format="png")
-    height, width = image.shape[:2]
-    box = Box(width/2-100, height/2, SIZE, SIZE/2)
-    ax.set_ylim([height, 0])
-    ax.set_xlim([0, width])
-    ax.set_aspect('equal', adjustable='box')
-    ax.imshow(image)
-    box.draw(ax)
+COLOR = {
+    WallType.BASE: (255, 0, 0),
+    WallType.SOUTH: (0, 255, 0),
+    WallType.EAST: (0, 0, 255),
+    WallType.NORTH: (255, 255, 0),
+    WallType.WEST: (255, 0, 255),
+}
 
-    alpha_coords = np.argwhere(image[:, :, 3] > 0)
-    alpha_coords = alpha_coords[::10]
+image = cv2.imread("image.png", cv2.IMREAD_UNCHANGED)
+image_alpha = image[:, :, 3]
+_, image_bin = cv2.threshold(image_alpha, 126, 255, cv2.THRESH_BINARY)
+contours, _ = cv2.findContours(image_bin, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
 
-    ax.plot(alpha_coords[:, 1], alpha_coords[:, 0], 'y.', markersize=0.3)
+img_contours = cv2.drawContours(image, contours, -1, (255, 255, 255), 1)
 
+height, width = image.shape[:2]
+box = Box(width/2-100, height/2, SIZE, SIZE/2)
 
-    fig, ax2 = plt.subplots()
-    ax2.set_ylim([box.north.height+5, -5])
-    ax2.set_xlim([-5, box.north.width+5])
-    ax2.set_aspect('equal', adjustable='box')
-    points = box.north.get_points() - box.north.origin
-    new_points = []
-    for point in points:
-        new_points.append([point[0]+SIZE, point[2]])
+for c in contours:
+    for coord in c:
+        row, col = coord[0]
+        wall, intersection = box.get_intersection([row, col, 0.0])
+        if wall is not None:
+            intersection = np.int16(intersection)
+            cv2.line(image, tuple(coord[0]), tuple(np.int16(intersection[0:2:1])), COLOR[wall.name], 1)
 
-    ax2.add_patch(patches.Polygon(new_points, closed=True))
+image = box.draw_cv(image, (255,255,255))
 
-    x_coords = []
-    y_coords = []
-    for coord in alpha_coords:
-        row, col = coord
-        wall, intersection = box.get_intersection([col, row, 0.0])
-        if wall and wall.name == WallType.NORTH:
-            ax.add_line(plt.Line2D([col, box.center[0]], [row, box.center[1]]))
-            c = intersection - box.north.origin
-            x_coords.append(c[0]+SIZE)
-            y_coords.append(c[2])
-
-    ax2.plot(x_coords, y_coords, 'ko', markersize=1)
-    plt.show()
-
-
-main()
+cv2.imshow("Image", image)
+cv2.waitKey(0)
+cv2.destroyAllWindows()
