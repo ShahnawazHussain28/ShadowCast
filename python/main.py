@@ -16,7 +16,7 @@ image = cv2.imread("zoro.png", cv2.IMREAD_UNCHANGED)
 image = cv2.resize(image, (480, 480))
 image_alpha = image[:, :, 3]
 _, image_bin = cv2.threshold(image_alpha, 126, 255, cv2.THRESH_BINARY)
-contours, _ = cv2.findContours(image_bin, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+contours, _ = cv2.findContours(image_bin, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
 
 img_contours = cv2.drawContours(image, contours, -1, (255, 255, 255), 1)
 
