@@ -12,7 +12,7 @@ COLOR = {
     WallType.WEST: (255, 0, 255), # magenta
 }
 
-image = cv2.imread("image.png", cv2.IMREAD_UNCHANGED)
+image = cv2.imread("zoro.png", cv2.IMREAD_UNCHANGED)
 image = cv2.resize(image, (480, 480))
 image_alpha = image[:, :, 3]
 _, image_bin = cv2.threshold(image_alpha, 126, 255, cv2.THRESH_BINARY)
@@ -86,10 +86,10 @@ def place_box(x=width/2, y=height/2):
     draw_carvings(carvings[WallType.SOUTH], south_wall, COLOR[WallType.SOUTH])
     draw_carvings(carvings[WallType.EAST], east_wall, COLOR[WallType.EAST])
     draw_carvings(carvings[WallType.WEST], west_wall, COLOR[WallType.WEST])
-    cv2.imshow("North wall", north_wall)
+    cv2.imshow("North wall", cv2.flip(north_wall, 0))
     cv2.imshow("South wall", south_wall)
-    cv2.imshow("East wall", east_wall)
-    cv2.imshow("West wall", west_wall)
+    cv2.imshow("East wall", cv2.flip(cv2.rotate(east_wall, cv2.ROTATE_90_COUNTERCLOCKWISE), 0))
+    cv2.imshow("West wall", cv2.rotate(west_wall, cv2.ROTATE_90_CLOCKWISE))
     cv2.imshow("Image", display_image)
 
 
