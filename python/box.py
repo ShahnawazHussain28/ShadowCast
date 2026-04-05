@@ -99,7 +99,6 @@ class Line:
 hitnone = 0
 class Box:
     def __init__(self, x, y, size, height):
-        # center of the box
         self.x = x
         self.y = y
         self.size = size
@@ -112,11 +111,11 @@ class Box:
             [x+size, y, 0],
             [x, y+size, 0],
         )
-        self.south = Wall(
-            WallType.SOUTH,
-            [x, y+size, 0],
-            [x+size, y+size, 0],
-            [x, y+size, height],
+        self.north = Wall(
+            WallType.NORTH,
+            [x, y, 0],
+            [x+size, y, 0],
+            [x, y, height],
         )
         self.east = Wall(
             WallType.EAST,
@@ -124,17 +123,17 @@ class Box:
             [x+size, y, 0],
             [x+size, y+size, height],
         )
-        self.north = Wall(
-            WallType.NORTH,
-            [x+size, y, 0],
-            [x, y, 0],
-            [x+size, y, height],
+        self.south = Wall(
+            WallType.SOUTH,
+            [x, y+size, 0],
+            [x+size, y+size, 0],
+            [x, y+size, height],
         )
         self.west = Wall(
             WallType.WEST,
-            [x, y, 0],
             [x, y+size, 0],
-            [x, y, height],
+            [x, y, 0],
+            [x, y+size, height],
         )
     
     def draw(self, ax: Axes):
