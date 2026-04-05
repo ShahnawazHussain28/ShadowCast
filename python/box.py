@@ -119,9 +119,9 @@ class Box:
         )
         self.east = Wall(
             WallType.EAST,
-            [x+size, y+size, 0],
             [x+size, y, 0],
-            [x+size, y+size, height],
+            [x+size, y+size, 0],
+            [x+size, y, height],
         )
         self.south = Wall(
             WallType.SOUTH,
@@ -131,9 +131,9 @@ class Box:
         )
         self.west = Wall(
             WallType.WEST,
-            [x, y+size, 0],
             [x, y, 0],
-            [x, y+size, height],
+            [x, y+size, 0],
+            [x, y, height],
         )
     
     def draw(self, ax: Axes):

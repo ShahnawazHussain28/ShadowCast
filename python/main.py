@@ -3,7 +3,7 @@ import numpy as np
 from box import Box, WallType, Wall
 
 SIZE = 50
-RESOLUTION = 20 # 20x
+RESOLUTION = 15
 
 COLOR = {
     WallType.NORTH: (255, 0, 0), # blue
@@ -39,6 +39,13 @@ def draw_carvings(carvings, image, color):
     carvings = [np.array(c).reshape((-1, 1, 2)).astype(np.int32) for c in carvings]
     cv2.polylines(image, carvings, isClosed=False, color=color, thickness=1)
 
+def debug_carvings(carvings, title=""):
+    print(title)
+    l = []
+    for c in carvings:
+        l.extend(c[0])
+    l = np.array(l)
+    print(min(l[:, 0]), max(l[:, 0]), min(l[:, 1]), max(l[:, 1]))
 
 def place_box(x=width/2, y=height/2):
     display_image = image.copy()
@@ -71,13 +78,19 @@ def place_box(x=width/2, y=height/2):
         if prevWall is not None:
             carvings[prevWall.name].append([carving])
 
-        north_wall = np.zeros((int(SIZE*RESOLUTION/2), SIZE*RESOLUTION, 3), dtype=np.uint8)
-        south_wall = np.zeros((int(SIZE*RESOLUTION/2), SIZE*RESOLUTION, 3), dtype=np.uint8)
-        draw_carvings(carvings[WallType.NORTH], north_wall, COLOR[WallType.NORTH])
-        draw_carvings(carvings[WallType.SOUTH], south_wall, COLOR[WallType.SOUTH])
-        cv2.imshow("North wall", north_wall)
-        cv2.imshow("South wall", south_wall)
-        cv2.imshow("Image", display_image)
+    north_wall = np.zeros((int(SIZE*RESOLUTION/2), SIZE*RESOLUTION, 3), dtype=np.uint8)
+    south_wall = north_wall.copy()
+    east_wall = north_wall.copy()
+    west_wall = north_wall.copy()
+    draw_carvings(carvings[WallType.NORTH], north_wall, COLOR[WallType.NORTH])
+    draw_carvings(carvings[WallType.SOUTH], south_wall, COLOR[WallType.SOUTH])
+    draw_carvings(carvings[WallType.EAST], east_wall, COLOR[WallType.EAST])
+    draw_carvings(carvings[WallType.WEST], west_wall, COLOR[WallType.WEST])
+    cv2.imshow("North wall", north_wall)
+    cv2.imshow("South wall", south_wall)
+    cv2.imshow("East wall", east_wall)
+    cv2.imshow("West wall", west_wall)
+    cv2.imshow("Image", display_image)
 
 
 
