@@ -1,9 +1,11 @@
 import cv2
 import numpy as np
-from box import Box, WallType, Wall
+from box import Box, WallType, Wall, ELEVATION_FACTOR
 
 SIZE = 50
 RESOLUTION = 15
+PAPER_W = 2480
+PAPER_H = 3508
 
 COLOR = {
     WallType.NORTH: (255, 0, 0), # blue
@@ -47,6 +49,32 @@ def debug_carvings(carvings, title=""):
     l = np.array(l)
     print(min(l[:, 0]), max(l[:, 0]), min(l[:, 1]), max(l[:, 1]))
 
+def place_images_on_a4(base_wall, north_wall, south_wall, east_wall, west_wall):
+    paper = np.ones((PAPER_H, PAPER_W, 3), dtype=np.uint8) * 255
+    outline_thickness = 10
+    padding = int(PAPER_W * 0.1)
+    w = PAPER_W - padding*2
+    unit = int(w/4)
+    base_wall = cv2.resize(base_wall, (unit*2, unit*2))
+    north_wall = cv2.resize(north_wall, (unit*2, unit))
+    south_wall = cv2.resize(south_wall, (unit*2, unit))
+    east_wall = cv2.resize(east_wall, (unit, unit*2))
+    west_wall = cv2.resize(west_wall, (unit, unit*2))
+    cv2.rectangle(north_wall, (0, 0), (unit*2-1, unit-1), (0, 0, 0), outline_thickness)
+    cv2.rectangle(south_wall, (0, 0), (unit*2-1, unit-1), (0, 0, 0), outline_thickness)
+    cv2.rectangle(east_wall, (0, 0), (unit-1, unit*2-1), (0, 0, 0), outline_thickness)
+    cv2.rectangle(west_wall, (0, 0), (unit-1, unit*2-1), (0, 0, 0), outline_thickness)
+    cv2.circle(base_wall, (unit, unit), int(unit*0.1), (0, 0, 0), -1)
+
+    paper[padding+unit:padding+unit*3, padding+unit:padding+unit*3, :] = base_wall
+    paper[padding:padding+unit, padding+unit:padding+unit*3, :] = north_wall
+    paper[padding+unit*3:padding+w, padding+unit:padding+unit*3, :] = south_wall
+    paper[padding+unit:padding+unit*3, padding+unit*2+unit:padding+w, :] = east_wall
+    paper[padding+unit:padding+unit*3, padding:padding+unit, :] = west_wall
+    cv2.rectangle(paper, (padding + unit*2 - int(ELEVATION_FACTOR*unit), padding*2 + w - 10), (padding+unit*2 + int(ELEVATION_FACTOR*unit), padding*2 + w + 10), (0, 0, 0), -1)
+
+    return paper
+
 def place_box(x=width/2, y=height/2):
     display_image = image.copy()
     x = x - SIZE/2
@@ -78,19 +106,28 @@ def place_box(x=width/2, y=height/2):
         if prevWall is not None:
             carvings[prevWall.name].append([carving])
 
-    north_wall = np.zeros((int(SIZE*RESOLUTION/2), SIZE*RESOLUTION, 3), dtype=np.uint8)
+    north_wall = np.ones((int(SIZE*RESOLUTION/2), SIZE*RESOLUTION, 3), dtype=np.uint8) * 255
+    base_wall = np.ones((int(SIZE*RESOLUTION), SIZE*RESOLUTION, 3), dtype=np.uint8) * 255
     south_wall = north_wall.copy()
     east_wall = north_wall.copy()
     west_wall = north_wall.copy()
-    draw_carvings(carvings[WallType.NORTH], north_wall, COLOR[WallType.NORTH])
-    draw_carvings(carvings[WallType.SOUTH], south_wall, COLOR[WallType.SOUTH])
-    draw_carvings(carvings[WallType.EAST], east_wall, COLOR[WallType.EAST])
-    draw_carvings(carvings[WallType.WEST], west_wall, COLOR[WallType.WEST])
-    cv2.imshow("North wall", cv2.flip(north_wall, 0))
-    cv2.imshow("South wall", south_wall)
-    cv2.imshow("East wall", cv2.flip(cv2.rotate(east_wall, cv2.ROTATE_90_COUNTERCLOCKWISE), 0))
-    cv2.imshow("West wall", cv2.rotate(west_wall, cv2.ROTATE_90_CLOCKWISE))
+    draw_carvings(carvings[WallType.NORTH], north_wall, (0,0,0))
+    draw_carvings(carvings[WallType.SOUTH], south_wall, (0,0,0))
+    draw_carvings(carvings[WallType.EAST], east_wall, (0,0,0))
+    draw_carvings(carvings[WallType.WEST], west_wall, (0,0,0))
+    north_wall = cv2.flip(north_wall, 0)
+    east_wall = cv2.flip(cv2.rotate(east_wall, cv2.ROTATE_90_COUNTERCLOCKWISE), 0)
+    west_wall = cv2.rotate(west_wall, cv2.ROTATE_90_CLOCKWISE)
+    # cv2.imshow("North wall", north_wall)
+    # cv2.imshow("South wall", south_wall)
+    # cv2.imshow("East wall", east_wall)
+    # cv2.imshow("West wall", west_wall)
     cv2.imshow("Image", display_image)
+
+    paper = place_images_on_a4(base_wall, north_wall, south_wall, east_wall, west_wall)
+    cv2.imshow("Paper", cv2.resize(paper, (int(PAPER_W/4), int(PAPER_H/4))))
+    cv2.imwrite("paper.png", paper)
+    
 
 
 

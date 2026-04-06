@@ -11,7 +11,8 @@ class WallType(Enum):
     SOUTH = 3
     WEST = 4
 
-test = 0
+ELEVATION_FACTOR = 1.05
+
 class Wall:
     def __init__(self, name, p1, p2, p3):
         """
@@ -103,7 +104,7 @@ class Box:
         self.y = y
         self.size = size
         self.center = np.array([x+size/2, y+size/2, 0])
-        self.light = self.center + np.array([0, 0, height*1.05])
+        self.light = self.center + np.array([0, 0, height*ELEVATION_FACTOR])
         self.height = height
         self.base = Wall(
             WallType.BASE,
