@@ -16,7 +16,7 @@ COLOR = {
     WallType.WEST: (255, 0, 255), # magenta
 }
 
-image = cv2.imread(FILE_NAME, cv2.IMREAD_UNCHANGED)
+image = cv2.imread("input/"+FILE_NAME, cv2.IMREAD_UNCHANGED)
 image = cv2.resize(image, (480, 480))
 image_alpha = image[:, :, 3]
 _, image_bin = cv2.threshold(image_alpha, 126, 255, cv2.THRESH_BINARY)
@@ -53,7 +53,7 @@ def debug_carvings(carvings, title=""):
 
 def place_images_on_a4(base_wall, north_wall, south_wall, east_wall, west_wall):
     paper = np.ones((PAPER_H, PAPER_W, 3), dtype=np.uint8) * 255
-    outline_thickness = 10
+    outline_thickness = 1
     padding = int(PAPER_W * 0.1)
     w = PAPER_W - padding*2
     unit = int(w/4)
@@ -128,8 +128,8 @@ def place_box(x=width/2, y=height/2):
 
     paper = place_images_on_a4(base_wall, north_wall, south_wall, east_wall, west_wall)
     cv2.imshow("Paper", cv2.resize(paper, (int(PAPER_W/4), int(PAPER_H/4))))
-    cv2.imwrite(FILE_NAME, paper)
-    print("Saved to " + FILE_NAME)
+    cv2.imwrite("output/"+FILE_NAME, paper)
+    print("Saved to " + "output/" + FILE_NAME)
 
 place_box()
 
