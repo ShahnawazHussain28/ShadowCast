@@ -2,6 +2,8 @@ import cv2
 import numpy as np
 from box import Box, WallType, Wall, ELEVATION_FACTOR
 
+FILE_NAME = "zoro.png"
+
 SIZE = 50
 RESOLUTION = 15
 PAPER_W = 2480
@@ -14,7 +16,7 @@ COLOR = {
     WallType.WEST: (255, 0, 255), # magenta
 }
 
-image = cv2.imread("zoro.png", cv2.IMREAD_UNCHANGED)
+image = cv2.imread(FILE_NAME, cv2.IMREAD_UNCHANGED)
 image = cv2.resize(image, (480, 480))
 image_alpha = image[:, :, 3]
 _, image_bin = cv2.threshold(image_alpha, 126, 255, cv2.THRESH_BINARY)
@@ -126,15 +128,8 @@ def place_box(x=width/2, y=height/2):
 
     paper = place_images_on_a4(base_wall, north_wall, south_wall, east_wall, west_wall)
     cv2.imshow("Paper", cv2.resize(paper, (int(PAPER_W/4), int(PAPER_H/4))))
-    cv2.imwrite("paper.png", paper)
-    
-
-
-
-
-
-
-
+    cv2.imwrite(FILE_NAME, paper)
+    print("Saved to " + FILE_NAME)
 
 place_box()
 
