@@ -137,6 +137,18 @@ class Box:
             [x, y, height],
         )
     
+    def get_wall(self, wall_name):
+        if wall_name == WallType.NORTH:
+            return self.north
+        elif wall_name == WallType.EAST:
+            return self.east
+        elif wall_name == WallType.SOUTH:
+            return self.south
+        elif wall_name == WallType.WEST:
+            return self.west
+        else:
+            return self.base
+    
     def draw(self, ax: Axes):
         ax.add_patch(patches.Polygon(self.base.get_points()[:, :2], closed=True))
         ax.add_patch(patches.Polygon(self.north.get_points()[:, :2], closed=True, edgecolor='black', linewidth=1))
@@ -169,3 +181,10 @@ class Box:
                     closest_wall = wall
                     closest_point = hit
         return closest_wall, closest_point
+
+    @staticmethod
+    def project_to_z0(light: np.ndarray, point: np.ndarray):
+        t = -light[2] / (point[2] - light[2])
+        x = light[0] + t * (point[0] - light[0])
+        y = light[1] + t * (point[1] - light[1])
+        return x, y
