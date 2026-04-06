@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-from box import Box, WallType, ELEVATION_FACTOR
+from box import Box, WallType
 from config import Config
 
 FILE_NAME = Config.file_name
@@ -10,6 +10,7 @@ SIZE = Config.box_size
 PAPER_W = Config.paper_width
 PAPER_H = Config.paper_height
 PADDING = Config.paper_padding
+ELEVATION_FACTOR = Config.elevation_factor
 
 WALL_SIZE = int((PAPER_W - 2*PADDING) / 4)
 
@@ -45,7 +46,7 @@ def place_images_on_a4(base_wall, north_wall, south_wall, east_wall, west_wall):
     paper[PADDING+unit*3:PADDING+w, PADDING+unit:PADDING+unit*3, :] = south_wall
     paper[PADDING+unit:PADDING+unit*3, PADDING+unit*2+unit:PADDING+w, :] = east_wall
     paper[PADDING+unit:PADDING+unit*3, PADDING:PADDING+unit, :] = west_wall
-    cv2.rectangle(paper, (PADDING + unit*2 - int(ELEVATION_FACTOR*unit), PADDING*2 + w - 10), (PADDING+unit*2 + int(ELEVATION_FACTOR*unit), PADDING*2 + w + 10), (0, 0, 0), -1)
+    cv2.rectangle(paper, (PADDING + unit*2 - int(ELEVATION_FACTOR*unit/2), PADDING*2 + w - 10), (PADDING+unit*2 + int(ELEVATION_FACTOR*unit/2), PADDING*2 + w + 10), (0, 0, 0), -1)
 
     return paper
 
