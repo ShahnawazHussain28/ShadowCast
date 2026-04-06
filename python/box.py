@@ -1,6 +1,7 @@
 import numpy as np
 from enum import Enum
 from config import Config
+import cv2
 
 class WallType(Enum):
     BASE = 0
@@ -9,7 +10,9 @@ class WallType(Enum):
     SOUTH = 3
     WEST = 4
 
-ELEVATION_FACTOR = Config.elevation_factor
+config = Config()
+
+ELEVATION_FACTOR = config.elevation_factor
 
 class Wall:
     def __init__(self, name, p1, p2, p3):
@@ -86,6 +89,11 @@ class Box:
             return self.west
         else:
             return self.base
+    
+    def draw(self, image_bin):
+        image = cv2.cvtColor(image_bin, cv2.COLOR_GRAY2BGR)
+        cv2.rectangle(image, (int(self.x), int(self.y)), (int(self.x+self.size), int(self.y+self.size)), (0,0,0), -1)
+        return image
 
     @staticmethod
     def project_to_z0(light: np.ndarray, point: np.ndarray):

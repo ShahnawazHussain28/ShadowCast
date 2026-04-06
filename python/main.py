@@ -3,14 +3,18 @@ import numpy as np
 from box import Box, WallType
 from config import Config
 
-FILE_NAME = Config.file_name
+config = Config()
 
-IMAGE_RESOLUTION = Config.image_resolution
-SIZE = Config.box_size
-PAPER_W = Config.paper_width
-PAPER_H = Config.paper_height
-PADDING = Config.paper_padding
-ELEVATION_FACTOR = Config.elevation_factor
+FILE_NAME = config.file_name
+OUTPUT_FILE_NAME = config.output_file_name
+
+IMAGE_RESOLUTION = config.image_resolution
+DISPLAY_IMAGE_SIZE = config.display_image_size
+SIZE = config.box_size
+PAPER_W = config.paper_width
+PAPER_H = config.paper_height
+PADDING = config.paper_padding
+ELEVATION_FACTOR = config.elevation_factor
 
 WALL_SIZE = int((PAPER_W - 2*PADDING) / 4)
 
@@ -51,10 +55,10 @@ def place_images_on_a4(base_wall, north_wall, south_wall, east_wall, west_wall):
     return paper
 
 def place_box(x=width/2, y=height/2):
-    display_image = image.copy()
     x = x - SIZE/2
     y = y - SIZE/2
     box = Box(x, y, SIZE, SIZE/2)
+    image = box.draw(image_bin)
 
     wall_canvases = {
         WallType.SOUTH: np.zeros((WALL_SIZE, WALL_SIZE*2), dtype=np.uint8),
@@ -83,18 +87,20 @@ def place_box(x=width/2, y=height/2):
     north_wall = cv2.flip(north_wall, 0)
     east_wall = cv2.flip(cv2.rotate(east_wall, cv2.ROTATE_90_COUNTERCLOCKWISE), 0)
     west_wall = cv2.rotate(west_wall, cv2.ROTATE_90_CLOCKWISE)
-    cv2.imshow("Image", display_image)
 
     paper = place_images_on_a4(base_wall, north_wall, south_wall, east_wall, west_wall)
-    cv2.imshow("Paper", cv2.resize(paper, (int(PAPER_W/4), int(PAPER_H/4))))
-    cv2.imwrite("output/"+FILE_NAME, paper)
-    print("Saved to " + "output/" + FILE_NAME)
+    cv2.imshow("Image", cv2.resize(image, (DISPLAY_IMAGE_SIZE, DISPLAY_IMAGE_SIZE)))
+    cv2.imshow("Paper", cv2.resize(paper, (int(DISPLAY_IMAGE_SIZE), int(PAPER_H/PAPER_W*DISPLAY_IMAGE_SIZE))))
+    cv2.moveWindow("Image", 0, 0)
+    cv2.moveWindow("Paper", 550, 0)
+    cv2.imwrite("output/"+OUTPUT_FILE_NAME, paper)
+    print("Saved to " + "output/" + OUTPUT_FILE_NAME)
 
 place_box()
 
 def click_event(event, x, y, flags, params):
     if event == cv2.EVENT_LBUTTONDOWN:
-        place_box(x, y)
+        place_box(x/DISPLAY_IMAGE_SIZE*IMAGE_RESOLUTION, y/DISPLAY_IMAGE_SIZE*IMAGE_RESOLUTION)
 
 
 
